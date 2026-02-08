@@ -1,22 +1,35 @@
-import datetime
 from http import HTTPStatus
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
-from fastapi_duno.schemas import Message, Time
+from fastapi_duno.schemas import UserDB, Userlist, UserPublic, UserSchema
 
 app = FastAPI()
 
-
-@app.get('/', status_code=HTTPStatus.OK, response_model=Message)
-def get_hello():
-    return {
-        'message': 'hello world!',
-    }
+database = []
 
 
-@app.get('/time', status_code=HTTPStatus.OK, response_model=Time)
-def get_current_time():
-    return {
-        'time': datetime.datetime.now(),
-    }
+@app.post('/users', status_code=HTTPStatus.CREATED, response_model=UserPublic)
+def create_user(user: UserSchema):
+    user_with_id = UserDB(**user.model_dump(), id=len(database) + 1)
+
+    database.append(user_with_id)
+    return user_with_id
+
+
+@app.get('/users', status_code=HTTPStatus.OK, response_model=Userlist)
+def get_users():
+    return {'users': database}
+
+
+@app.put('/users/{user_id}', response_model=UserPublic)
+def update_user(user_id: int, user: UserSchema):
+    if user_id > len(database) or user_id < 1:
+        return HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail=f'User {user_id} not found',
+        )
+
+    user_with_id = UserDB(**user.model_dump(), id=user_id)
+    database[user_id - 1] = user_with_id
+    return user_with_id
