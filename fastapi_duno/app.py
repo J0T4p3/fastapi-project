@@ -32,3 +32,12 @@ def update_user(user_id: int, user: UserSchema):
     user_with_id = UserDB(**user.model_dump(), id=user_id)
     database[user_id - 1] = user_with_id
     return user_with_id
+
+
+@app.delete('/users/{user_id}', response_model=UserPublic)
+def delete_user(user_id: int):
+    for user in database:
+        if user.id == user_id:
+            database.remove(user)
+            return user
+    raise HTTPException(HTTPStatus.NOT_FOUND, 'User not found')
