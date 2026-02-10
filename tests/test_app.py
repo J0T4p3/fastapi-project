@@ -48,14 +48,14 @@ def test_update_user(client):
     }
 
 
-# def test_update_missing_user(client):
-#     response = client.put(
-#         '/users/9999',
-#         json={
-#             'name': 'newname',
-#             'email': 'newemail@gmail.com',
-#             'password': 'newpassword',
-#         },
-#     )
-#
-#     assert response.status_code == HTTPStatus.NOT_FOUND
+def test_update_missing_user(client):
+    response = client.put(
+        '/users/9999',
+        json={
+            'name': 'newname',
+            'email': 'newemail@gmail.com',
+            'password': 'newpassword',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
