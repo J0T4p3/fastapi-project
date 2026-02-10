@@ -1,10 +1,24 @@
 from http import HTTPStatus
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi_duno.schemas import UserDB, Userlist, UserPublic, UserSchema
 
 app = FastAPI()
+
+origins = [
+    'http://localhost',
+    'http://localhost:8080',
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 database = []
 
@@ -41,5 +55,12 @@ def delete_user(user_id: int):
             status_code=HTTPStatus.NOT_FOUND,
             detail=f'User {user_id} not found',
         )
-    del database[user_id - 1]
+
+    try:
+        del database[user_id - 1]
+    except KeyError:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail=f'User {user_id} not found',
+        )
     return {'detail': f'User {user_id} deleted'}
