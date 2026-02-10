@@ -23,17 +23,35 @@ app.add_middleware(
 database = []
 
 
+@app.get('/users', status_code=HTTPStatus.OK, response_model=Userlist)
+def get_users():
+    return {'users': database}
+
+
+@app.get(
+    '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
+)
+def get_user_by_id(user_id: int):
+    if user_id < 0 or user_id > len(database):
+        raise HTTPException(
+            HTTPStatus.NOT_FOUND, detail=f'User {user_id} not found'
+        )
+
+    try:
+        user: UserSchema = database[user_id - 1]
+        return user
+    except KeyError:
+        raise HTTPException(
+            HTTPStatus.NOT_FOUND, detail=f'User {user_id} not found'
+        )
+
+
 @app.post('/users', status_code=HTTPStatus.CREATED, response_model=UserPublic)
 def create_user(user: UserSchema):
     user_with_id = UserDB(**user.model_dump(), id=len(database) + 1)
 
     database.append(user_with_id)
     return user_with_id
-
-
-@app.get('/users', status_code=HTTPStatus.OK, response_model=Userlist)
-def get_users():
-    return {'users': database}
 
 
 @app.put('/users/{user_id}', response_model=UserPublic)

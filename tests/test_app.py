@@ -17,6 +17,24 @@ def test_create_user(client):
     }
 
 
+def test_get_user_by_id(client):
+    response = client.get('/users/1')
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        'id': 1,
+        'name': 'John',
+        'email': 'joaopedro@teste.com',
+    }
+
+
+def test_get_not_found_user(client):
+    response = client.get('/users/999')
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'User 999 not found'}
+
+
 def test_return_list_of_created_users(client):
     user_data = {
         'id': 1,
