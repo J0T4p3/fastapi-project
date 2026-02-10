@@ -59,15 +59,18 @@ def test_update_missing_user(client):
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'User 9999 not found'}
 
 
 def test_delete_user(client):
     response = client.delete('/users/1')
 
     assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'detail': 'User 1 deleted'}
 
 
 def test_delete_not_found_user(client):
     response = client.delete('/users/8888')
 
     assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'User 8888 not found'}

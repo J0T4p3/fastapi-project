@@ -34,10 +34,12 @@ def update_user(user_id: int, user: UserSchema):
     return user_with_id
 
 
-@app.delete('/users/{user_id}', response_model=UserPublic)
+@app.delete('/users/{user_id}')
 def delete_user(user_id: int):
-    for user in database:
-        if user.id == user_id:
-            database.remove(user)
-            return user
-    raise HTTPException(HTTPStatus.NOT_FOUND, 'User not found')
+    if user_id > len(database) or user_id < 1:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail=f'User {user_id} not found',
+        )
+    del database[user_id - 1]
+    return {'detail': f'User {user_id} deleted'}
