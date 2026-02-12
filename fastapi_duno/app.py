@@ -1,8 +1,12 @@
 from http import HTTPStatus
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
+from fastapi_duno.database import get_session
+from fastapi_duno.models import User
 from fastapi_duno.schemas import UserDB, Userlist, UserPublic, UserSchema
 
 app = FastAPI()
@@ -29,7 +33,9 @@ def get_users():
 
 
 @app.get(
-    '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
+    '/users/{user_id}',
+    status_code=HTTPStatus.OK,
+    response_model=UserPublic,
 )
 def get_user_by_id(user_id: int):
     if user_id < 0 or user_id > len(database):
@@ -47,11 +53,32 @@ def get_user_by_id(user_id: int):
 
 
 @app.post('/users', status_code=HTTPStatus.CREATED, response_model=UserPublic)
-def create_user(user: UserSchema):
-    user_with_id = UserDB(**user.model_dump(), id=len(database) + 1)
+def create_user(user: UserSchema, session: Session = Depends(get_session)):
+    db_user = session.scalar(
+        select(User).where(
+            (User.username == user.username) | (User.email == user.email)
+        )
+    )
+    if db_user:
+        if db_user.username == user.username:
+            raise HTTPException(
+                HTTPStatus.CONFLICT, detail='Usernamed already registered'
+            )
+        if db_user.email == user.email:
+            raise HTTPException(
+                HTTPStatus.CONFLICT, detail='Email already registered'
+            )
 
-    database.append(user_with_id)
-    return user_with_id
+    db_user = User(
+        username=user.username,
+        password=user.password,
+        email=user.email,
+    )
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
+
+    return db_user
 
 
 @app.put('/users/{user_id}', response_model=UserPublic)

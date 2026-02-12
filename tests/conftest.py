@@ -12,7 +12,7 @@ from fastapi_duno.models import table_registry
 
 
 @pytest.fixture
-def client():
+def client(session):
     return TestClient(app)
 
 
