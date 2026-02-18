@@ -27,15 +27,17 @@ app.add_middleware(
 database = []
 
 
-@app.get('/users', status_code=HTTPStatus.OK, response_model=Userlist)
-def get_users():
-    return {'users': database}
+@app.get('/users', response_model=Userlist)
+def get_users(
+    skip: int = 0, limit: int = 100, session: Session = Depends(get_session)
+):
+    users = session.scalars(select(User).offset(skip).limit(limit)).all()
+
+    return {'users': users}
 
 
 @app.get(
-    '/users/{user_id}',
-    status_code=HTTPStatus.OK,
-    response_model=UserPublic,
+    '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
 )
 def get_user_by_id(user_id: int):
     if user_id < 0 or user_id > len(database):
