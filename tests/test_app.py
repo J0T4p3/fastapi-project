@@ -1,9 +1,11 @@
 from http import HTTPStatus
 
+from fastapi_duno.schemas import UserPublic
+
 
 def test_create_user(client):
     user_data = {
-        'name': 'John',
+        'username': 'John',
         'password': 'secret',
         'email': 'joaopedro@teste.com',
     }
@@ -12,9 +14,22 @@ def test_create_user(client):
     assert response.status_code == HTTPStatus.CREATED
     assert response.json() == {
         'id': 1,
-        'name': 'John',
+        'username': 'John',
         'email': 'joaopedro@teste.com',
     }
+
+
+def test_empty_users_table(client):
+    response = client.get('/users')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'users': []}
+
+
+def test_get_users(client, user):
+    user_schema = UserPublic.model_validate(user).model_dump()
+    response = client.get('/users')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'users': [user_schema]}
 
 
 def test_get_user_by_id(client):
@@ -23,7 +38,7 @@ def test_get_user_by_id(client):
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {
         'id': 1,
-        'name': 'John',
+        'username': 'John',
         'email': 'joaopedro@teste.com',
     }
 
