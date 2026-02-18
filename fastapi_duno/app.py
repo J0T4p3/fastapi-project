@@ -58,7 +58,7 @@ def create_user(user: UserSchema, session: Session = Depends(get_session)):
     if db_user:
         if db_user.username == user.username:
             raise HTTPException(
-                HTTPStatus.CONFLICT, detail='Usernamed already registered'
+                HTTPStatus.CONFLICT, detail='Username already registered'
             )
         if db_user.email == user.email:
             raise HTTPException(
