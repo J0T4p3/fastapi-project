@@ -19,6 +19,30 @@ def test_create_user(client):
     }
 
 
+def test_create_user_with_same_username(client, user):
+    user_data = {
+        'username': 'jack',
+        'password': 'secret',
+        'email': 'joaopedro@teste.com',
+    }
+
+    response = client.post('/users/', json=user_data)
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'Username already registered'}
+
+
+def test_create_user_with_same_email(client, user):
+    user_data = {
+        'username': 'test',
+        'password': 'jackpassword123#',
+        'email': 'jack@email.com',
+    }
+
+    response = client.post('/users/', json=user_data)
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'Email already registered'}
+
+
 def test_empty_users_table(client):
     response = client.get('/users')
     assert response.status_code == HTTPStatus.OK
