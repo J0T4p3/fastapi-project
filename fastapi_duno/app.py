@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from fastapi_duno.database import get_session
 from fastapi_duno.models import User
 from fastapi_duno.schemas import Message, Userlist, UserPublic, UserSchema
+from fastapi_duno.security import get_password_hash
 
 app = FastAPI()
 
@@ -65,9 +66,10 @@ def create_user(user: UserSchema, session: Session = Depends(get_session)):
                 HTTPStatus.CONFLICT, detail='Email already registered'
             )
 
+    hashed_password = get_password_hash(user.password)
     db_user = User(
         username=user.username,
-        password=user.password,
+        password=hashed_password,
         email=user.email,
     )
     session.add(db_user)
@@ -89,8 +91,9 @@ def update_user(
         )
 
     try:
+        hashed_password = get_password_hash(user.password)
         db_user.username = user.username
-        db_user.password = user.password
+        db_user.password = hashed_password
         db_user.email = user.email
         session.commit()
         session.refresh(db_user)
