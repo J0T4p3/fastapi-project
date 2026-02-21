@@ -11,6 +11,7 @@ dependencies = [
     "alembic>=1.18.4",
     "fastapi[standard]>=0.128.3",
     "pydantic-settings>=2.12.0",
+    "pyjwt>=2.11.0",
     "sqlalchemy>=2.0.46",
 ]
 
